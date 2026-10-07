@@ -1,0 +1,40 @@
+{
+  "schema": "douyin-plus/ruleset",
+  "schemaVersion": 1,
+  "name": "剧透保护",
+  "description": "影视解说区的剧透词。默认 action 为 blur，鼠标移上去可临时查看，避免误伤讨论。",
+  "author": "douyin-plus",
+  "homepage": "https://github.com/jeanhua/douyin-plus",
+  "version": 1,
+  "updatedAt": "2026-10-07T00:00:00.000Z",
+  "rules": [
+    {
+      "id": "r.spoiler.ending",
+      "name": "剧透 · 结局类",
+      "pattern": "剧透\n大结局\n最后死了\n结局是\n结局竟然\n凶手是\n真凶是\n最后的彩蛋\n片尾彩蛋\n反转是\n原来他才是",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "blur",
+      "note": "模糊而不是隐藏，需要时鼠标悬停即可查看"
+    },
+    {
+      "id": "r.spoiler.regex-nth-episode",
+      "name": "剧透 · 剧集进度",
+      "pattern": "第\\s*\\d{1,3}\\s*集(?:就|才|的)?(?:死|领盒饭|下线|登场|黑化|洗白)",
+      "type": "regex",
+      "caseSensitive": false,
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "blur",
+      "note": "如\"第8集就死了\"这类进剧透"
+    },
+    {
+      "id": "r.spoiler.book",
+      "name": "剧透 · 小说原著党",
+      "pattern": "原著党剧透\n小说里后面\n后面主角死了\n原著里他\n漫画里结局",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "blur",
+      "note": ""
+    }
+  ]
+}

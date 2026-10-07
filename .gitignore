@@ -1,0 +1,16 @@
+# 依赖
+node_modules/
+package-lock.json
+
+# 构建产物
+dist/
+*.zip
+*.crx
+*.pem
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log

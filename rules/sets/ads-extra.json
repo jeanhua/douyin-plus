@@ -1,0 +1,57 @@
+{
+  "schema": "douyin-plus/ruleset",
+  "schemaVersion": 1,
+  "name": "广告补充词库",
+  "description": "更细的营销/引流话术，如私域引流、黑产黑话。",
+  "author": "douyin-plus",
+  "homepage": "https://github.com/jeanhua/douyin-plus",
+  "version": 1,
+  "updatedAt": "2026-10-07T00:00:00.000Z",
+  "rules": [
+    {
+      "id": "r.ads.private-domain",
+      "name": "广告 · 私域引流话术",
+      "pattern": "私域\n引流\n获客\n起号\n养号\n矩阵号\n截流\n精准客源\n流量变现\n课程分销\n副业变现\n知识付费项目",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": "把正常讨论误伤概率中等，如影响体验可在规则列表里单独停用"
+    },
+    {
+      "id": "r.ads.trade-black",
+      "name": "广告 · 灰产交易话术",
+      "pattern": "代开\n代实名\n解封账号\n辅助解封\n养号软件\n机器粉\n刷粉刷赞\n刷播放量\n刷评论\n批发号\n账号买卖\n实名认证代办",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": ""
+    },
+    {
+      "id": "r.ads.fake-review",
+      "name": "广告 · 虚假好评",
+      "pattern": "好评返现\n晒图返现\n五星好评\n刷好评\n刷单平台\n好评截图\n返现红包",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": ""
+    },
+    {
+      "id": "r.ads.shop-redirect",
+      "name": "广告 · 站外店铺导流",
+      "pattern": "淘宝搜\n拼多多搜\n某宝搜索\n店铺名\n同款链接\n链接放在评论区\n链接在简介\n小黄车同款\n橱窗同款",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": ""
+    },
+    {
+      "id": "r.ads.crypto",
+      "name": "广告 · 虚拟币与投资",
+      "pattern": "炒币\n搬砖套利\n合约带单\n币圈\n足彩\n内部消息\n保本高息\n投资群\n资金盘\n拉人头返利\n静态收益",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": "资金盘与投资荐股类话术"
+    }
+  ]
+}

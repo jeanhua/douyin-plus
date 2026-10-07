@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>douyin-plus</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="head">
+      <div class="brand">
+        <span class="logo">D+</span>
+        <div class="brand-text">
+          <strong>douyin-plus</strong>
+          <span class="ver" id="version"></span>
+        </div>
+      </div>
+      <label class="switch" title="总开关">
+        <input type="checkbox" id="enabled" />
+        <span class="slider"></span>
+      </label>
+    </header>
+
+    <section class="panel">
+      <div class="panel-title">屏蔽场景</div>
+      <div class="chips" id="targets">
+        <label class="chip"><input type="checkbox" data-target="danmaku" /><span>弹幕</span></label>
+        <label class="chip"><input type="checkbox" data-target="comment" /><span>评论</span></label>
+        <label class="chip"><input type="checkbox" data-target="live" /><span>直播弹幕</span></label>
+        <label class="chip"><input type="checkbox" id="domFilter" /><span>页面兜底过滤</span></label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
+        <span>今日屏蔽</span>
+        <span class="hint" id="stats-total"></span>
+      </div>
+      <div class="stats" id="stats">
+        <div class="stat"><b id="today">0</b><span>今日</span></div>
+        <div class="stat"><b id="all">0</b><span>累计</span></div>
+        <div class="stat"><b id="rules-enabled">0</b><span>启用规则</span></div>
+      </div>
+      <ul class="top-list" id="top-list"></ul>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
+        <span>快速添加规则</span>
+        <button class="link" id="open-options" type="button">规则管理 →</button>
+      </div>
+      <div class="add-row">
+        <input id="quick-pattern" type="text" placeholder="输入关键词或正则，回车添加" />
+        <select id="quick-type" title="匹配方式">
+          <option value="keyword">关键词</option>
+          <option value="regex">正则</option>
+        </select>
+      </div>
+      <div class="add-actions">
+        <label class="chip small"><input type="checkbox" id="quick-all" checked /><span>全部场景</span></label>
+        <button class="btn primary" id="quick-add" type="button">添加并生效</button>
+      </div>
+      <p class="msg" id="quick-msg"></p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title"><span>规则订阅</span></div>
+      <div class="remote-row">
+        <span class="remote-state" id="remote-state">未启用</span>
+        <button class="btn" id="remote-update" type="button">立即更新</button>
+      </div>
+      <div class="add-actions">
+        <input id="remote-url" type="text" placeholder="规则订阅地址（GitHub / jsDelivr / 任意 URL）" />
+      </div>
+      <div class="add-actions wrap">
+        <label class="chip small"><input type="checkbox" id="remote-enabled" /><span>自动检查更新</span></label>
+        <button class="btn" id="remote-save" type="button">保存订阅</button>
+        <button class="btn" id="import-file" type="button">导入本地文件</button>
+        <button class="btn" id="export-rules" type="button">导出规则</button>
+      </div>
+      <input type="file" id="file-input" accept="application/json,.json" hidden />
+      <p class="msg" id="remote-msg"></p>
+    </section>
+
+    <footer class="foot">
+      <span id="pages"></span>
+      <button class="link" id="open-shortcuts" type="button">快捷键</button>
+    </footer>
+
+    <script src="../common/matcher.js"></script>
+    <script src="../common/schema.js"></script>
+    <script src="../background/remote.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

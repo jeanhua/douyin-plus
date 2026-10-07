@@ -1,0 +1,37 @@
+/* douyin-plus 页面注入样式 */
+
+.dyp-hidden {
+  display: none !important;
+}
+
+.dyp-blur {
+  filter: blur(6px) !important;
+  opacity: 0.55 !important;
+  transition: filter 0.15s ease, opacity 0.15s ease;
+  cursor: pointer;
+}
+
+.dyp-blur:hover,
+.dyp-blur:focus-within {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+/* 被屏蔽内容的占位提示样式（供后续"显示占位"模式使用） */
+.dyp-placeholder {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  margin: 2px 0;
+  border-radius: 6px;
+  background: rgba(254, 44, 85, 0.08);
+  color: #fe2c55;
+  font-size: 12px;
+  line-height: 1.4;
+  user-select: none;
+}
+
+.dyp-placeholder::before {
+  content: '🚫';
+}

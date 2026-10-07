@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+  "name": "douyin-plus",
+  "version": "0.1.0",
+  "description": "抖音网页增强：弹幕/评论关键词与正则屏蔽、规则自定义与导入导出、远程规则订阅更新。",
+  "author": "jeanhua",
+  "minimum_chrome_version": "111",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "douyin-plus",
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_ui": {
+    "page": "src/options/options.html",
+    "open_in_tab": true
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+  "permissions": ["storage", "alarms", "unlimitedStorage", "contextMenus", "notifications"],
+  "host_permissions": [
+    "https://*.douyin.com/*",
+    "https://raw.githubusercontent.com/*",
+    "https://github.com/*",
+    "https://cdn.jsdelivr.net/*",
+    "https://gitee.com/*"
+  ],
+  "optional_host_permissions": ["https://*/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://*.douyin.com/*"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "MAIN",
+      "js": ["src/common/matcher.js", "src/content/interceptor.js"]
+    },
+    {
+      "matches": ["https://*.douyin.com/*"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "ISOLATED",
+      "css": ["src/content/content.css"],
+      "js": [
+        "src/common/matcher.js",
+        "src/common/schema.js",
+        "src/common/storage.js",
+        "src/content/dom-filter.js",
+        "src/content/bridge.js"
+      ]
+    }
+  ]
+}

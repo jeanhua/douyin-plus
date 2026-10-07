@@ -1,0 +1,42 @@
+{
+  "schema": "douyin-plus/ruleset",
+  "schemaVersion": 1,
+  "name": "辱骂补充词库",
+  "description": "变体写法与谐音脏话。中文脏话存在大量谐音变形，这里只收录相对稳定、误伤率低的写法。",
+  "author": "douyin-plus",
+  "homepage": "https://github.com/jeanhua/douyin-plus",
+  "version": 1,
+  "updatedAt": "2026-10-07T00:00:00.000Z",
+  "rules": [
+    {
+      "id": "r.abuse.variant",
+      "name": "辱骂 · 谐音变体",
+      "pattern": "傻批\n沙雕网友\n傻吊\n煞笔玩意\n智熄\n脑瘫儿\n残废\n废物一个\n垃圾东西\n狗叫\n犬吠\n无脑喷子\n杠精本精",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": "其中\"沙雕\"单独出现多为网络调侃，故只匹配\"沙雕网友\"这种带指向的写法"
+    },
+    {
+      "id": "r.abuse.curse-family",
+      "name": "辱骂 · 诅咒家人",
+      "pattern": "你妈\n你爸\n尼玛\n泥马\n妈的\n妈卖批\n祖坟\n断子绝孙\n不得好死\n早死早超生",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "enabled": false,
+      "note": "默认关闭：\"你妈\"等词在正常口语里也会出现，误伤率较高，需要时手动打开"
+    },
+    {
+      "id": "r.abuse.regex-interjection",
+      "name": "辱骂 · 语气词强化正则",
+      "pattern": "[操草艹曹][你尼泥][妈马麻]",
+      "type": "regex",
+      "caseSensitive": false,
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "enabled": false,
+      "note": "默认关闭：三字谐音组合，容易和个别正常词冲突"
+    }
+  ]
+}

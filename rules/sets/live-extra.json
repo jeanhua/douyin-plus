@@ -1,0 +1,59 @@
+{
+  "schema": "douyin-plus/ruleset",
+  "schemaVersion": 1,
+  "name": "直播间专项",
+  "description": "直播间常见的刷屏、抽奖、机器人话术。",
+  "author": "douyin-plus",
+  "homepage": "https://github.com/jeanhua/douyin-plus",
+  "version": 1,
+  "updatedAt": "2026-10-07T00:00:00.000Z",
+  "rules": [
+    {
+      "id": "r.live.bot-spam",
+      "name": "直播 · 机器人刷屏",
+      "pattern": "6666\n8888\n9999\n冲冲冲\n前排\n占楼\n第一\n来了来了\n打卡打卡\n签到打卡\n刷刷刷",
+      "type": "keyword",
+      "targets": { "live": true, "danmaku": true },
+      "action": "hide",
+      "enabled": false,
+      "note": "默认关闭：这类短句在真实互动里也会出现，开启后弹幕会安静很多"
+    },
+    {
+      "id": "r.live.lottery",
+      "name": "直播 · 抽奖刷屏话术",
+      "pattern": "抽我抽我\n抽我吧\n求中奖\n中奖绝缘体\n已关注求中\n点赞抽奖\n评论抽奖\n福袋在哪\n福袋口令\n口令是\n扣1参与\n扣个1\n扣666参与",
+      "type": "keyword",
+      "targets": { "live": true },
+      "action": "hide",
+      "note": ""
+    },
+    {
+      "id": "r.live.gift-beg",
+      "name": "直播 · 索要礼物/打赏",
+      "pattern": "刷礼物\n上个火箭\n送个跑车\n打赏一下\n充点币\n充钱送礼物\n礼物刷起来\n灯牌升一升\n办个卡\n上个游艇",
+      "type": "keyword",
+      "targets": { "live": true, "comment": true },
+      "action": "hide",
+      "note": ""
+    },
+    {
+      "id": "r.live.buyer-shill",
+      "name": "直播 · 假买家控评",
+      "pattern": "已下单\n买过很好用\n回购第三次\n质量超好强烈推荐\n姐妹们冲\n这个价格闭眼入\n主播人太好了\n刚收到货质量不错",
+      "type": "keyword",
+      "targets": { "live": true, "comment": true },
+      "action": "hide",
+      "enabled": false,
+      "note": "默认关闭：真实买家也会这么说话，开启后请配合实际需要"
+    },
+    {
+      "id": "r.live.stream-url",
+      "name": "直播 · 拉群/拉直播话术",
+      "pattern": "进直播间\n去我直播间\n来我直播间\n关注我直播\n下播来我房间\n拉你进群\n建了个群\n群里聊\n群里有",
+      "type": "keyword",
+      "targets": { "live": true, "comment": true },
+      "action": "hide",
+      "note": ""
+    }
+  ]
+}

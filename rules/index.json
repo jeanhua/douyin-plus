@@ -1,0 +1,36 @@
+{
+  "schema": "douyin-plus/index",
+  "schemaVersion": 1,
+  "name": "douyin-plus 官方规则订阅",
+  "description": "远程规则索引。扩展会按 files 列表逐个拉取规则集并合并到本地（source = remote），不会覆盖你自己的规则。",
+  "homepage": "https://github.com/jeanhua/douyin-plus",
+  "version": 1,
+  "updatedAt": "2026-10-07T00:00:00.000Z",
+  "minAppVersion": "0.1.0",
+  "files": [
+    {
+      "path": "sets/ads-extra.json",
+      "name": "广告补充词库",
+      "enabled": true,
+      "description": "更细的营销/引流话术，如私域引流、黑产黑话"
+    },
+    {
+      "path": "sets/abuse-extra.json",
+      "name": "辱骂补充词库",
+      "enabled": true,
+      "description": "变体写法与谐音脏话"
+    },
+    {
+      "path": "sets/live-extra.json",
+      "name": "直播间专项",
+      "enabled": true,
+      "description": "直播间常见的刷屏、抽奖、机器人话术"
+    },
+    {
+      "path": "sets/spoiler.json",
+      "name": "剧透保护",
+      "enabled": false,
+      "description": "影视解说区的剧透词，默认关闭，需要时在设置里打开该文件或直接启用其中规则"
+    }
+  ]
+}

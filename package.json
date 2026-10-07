@@ -1,0 +1,23 @@
+{
+  "name": "douyin-plus",
+  "version": "0.1.0",
+  "private": true,
+  "description": "抖音网页增强扩展：弹幕/评论关键词与正则屏蔽、规则导入导出与远程订阅更新。",
+  "license": "MIT",
+  "author": "jeanhua",
+  "homepage": "https://github.com/jeanhua/douyin-plus",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jeanhua/douyin-plus.git"
+  },
+  "keywords": ["chrome-extension", "manifest-v3", "douyin", "danmaku", "content-filter"],
+  "scripts": {
+    "test": "node tools/test.js && node tools/test-dom.js && node tools/test-storage.js && node tools/check-ui.js",
+    "test:rules": "node tools/test.js",
+    "test:dom": "node tools/test-dom.js",
+    "test:storage": "node tools/test-storage.js",
+    "check:ui": "node tools/check-ui.js",
+    "icons": "node tools/make-icons.js",
+    "zip": "node tools/pack.js"
+  }
+}

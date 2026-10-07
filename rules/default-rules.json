@@ -1,0 +1,186 @@
+{
+  "schema": "douyin-plus/ruleset",
+  "schemaVersion": 1,
+  "name": "douyin-plus 内置默认规则",
+  "description": "随扩展打包的默认规则集。词条偏保守，命中率高的营销/引流/诈骗类内容。可在规则管理页按需停用或删除。",
+  "author": "douyin-plus",
+  "homepage": "https://github.com/jeanhua/douyin-plus",
+  "version": 1,
+  "updatedAt": "2026-10-07T00:00:00.000Z",
+  "rules": [
+    {
+      "id": "b.ads.wechat",
+      "name": "广告 · 微信/QQ 引流",
+      "pattern": "加微信\n加vx\n加VX\n加个微信\n加我薇\n加薇信\n留个微信\n微信同号\n加扣扣\n加QQ\n扣扣群\nQQ群\nqq群\n企鹅群\n私我微信\nvx同号",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": "常见的把站外联系方式写进评论/弹幕的引流话术"
+    },
+    {
+      "id": "b.ads.contact-regex",
+      "name": "广告 · 微信号 / 手机号 / QQ 号",
+      "pattern": "(?:微信|weixin|wechat|vx|v信|薇信)\\s*[:：号]?\\s*[A-Za-z0-9_-]{5,}",
+      "type": "regex",
+      "caseSensitive": false,
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": "带联系方式的微信号写法"
+    },
+    {
+      "id": "b.ads.phone",
+      "name": "广告 · 手机号",
+      "pattern": "(?<!\\d)1[3-9]\\d{9}(?!\\d)",
+      "type": "regex",
+      "caseSensitive": false,
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": "11 位手机号；前后加数字边界避免误伤订单号等长数字"
+    },
+    {
+      "id": "b.ads.qq",
+      "name": "广告 · QQ 号",
+      "pattern": "(?:QQ|qq|扣扣|企鹅)\\s*[:：号]?\\s*[1-9]\\d{4,11}",
+      "type": "regex",
+      "caseSensitive": false,
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": ""
+    },
+    {
+      "id": "b.ads.external-link",
+      "name": "广告 · 站外链接",
+      "pattern": "(?:https?:\\/\\/|\\bwww\\.)(?!(?:[a-z0-9-]+\\.)*(?:douyin\\.com|iesdouyin\\.com|douyinpic\\.com|douyinvod\\.com))",
+      "type": "regex",
+      "caseSensitive": false,
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": "抖音自身的域名除外，其余外链默认视为引流"
+    },
+    {
+      "id": "b.ads.promo-phrase",
+      "name": "广告 · 促销话术",
+      "pattern": "限时特价\n低价出\n清仓处理\n厂家直销\n一手货源\n批发价\n代购代发\n秒杀价\n白菜价\n拍下改价\n领优惠券\n优惠券链接\n点击链接购买\n下单立减\n领券下单",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": ""
+    },
+    {
+      "id": "b.ads.redirect-profile",
+      "name": "广告 · 引导看主页",
+      "pattern": "看我主页\n主页有惊喜\n主页有联系方式\n主页自取\n简介里有\n移步主页\n点我头像\n进主页看\n主页第一个视频",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": "把流量往个人主页/私域导的典型话术"
+    },
+    {
+      "id": "b.ads.freebie",
+      "name": "广告 · 免费领取套路",
+      "pattern": "免费领取\n免费送\n免费送送送\n评论领\n留言领取\n私信领取\n关注后私信\n点赞领取\n转发领取\n扫码领取\n扫码进群\n扫码加群",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": ""
+    },
+    {
+      "id": "b.fraud.money",
+      "name": "诈骗 · 兼职赚钱话术",
+      "pattern": "兼职日结\n日结工资\n一天赚\n日入过千\n日入过万\n月入过万\n躺赚\n零成本创业\n稳赚不赔\n包赚不亏\n带单\n跟单盈利\n刷单\n招代理\n代理加盟\n一部手机在家做\n宝妈兼职\n学生兼职日结",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": "刷单、拉人头类诈骗的常见说法"
+    },
+    {
+      "id": "b.gamble",
+      "name": "赌博 · 博彩引流",
+      "pattern": "六合彩\n澳门赌场\n新葡京\n太阳城\n真人荷官\n下注赢\n押注\n赌球\n博彩\n菠菜网站\n棋牌室\n炸金花\n牛牛群\n德州扑克局",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": ""
+    },
+    {
+      "id": "b.porn",
+      "name": "色情 · 招嫖引流",
+      "pattern": "约炮\n一夜情\n同城约\n上门服务\n特殊服务\n全套服务\n福利姬\n裸聊\n激情视频\n成人网站\n色情",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": ""
+    },
+    {
+      "id": "b.abuse.insult",
+      "name": "辱骂 · 常见人身攻击",
+      "pattern": "傻逼\n煞笔\n沙比\n傻B\n智障\n脑残\n脑瘫\n废物点心\n去死吧\n死全家\n全家暴毙\n贱货\n贱人\n杂种\n畜生东西\n狗东西\n滚出抖音",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": "偏激烈的辱骂词；日常吐槽语气词不在其中，避免过度屏蔽"
+    },
+    {
+      "id": "b.abuse.regional-slur",
+      "name": "辱骂 · 地域歧视",
+      "pattern": "地域黑\n地图炮\n某省人就是\n外地人滚",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "enabled": false,
+      "note": "默认关闭的示例规则：留给你自己补充不想看到的地域黑词条"
+    },
+    {
+      "id": "b.spam.repeat-emoji",
+      "name": "刷屏 · 超长重复字符",
+      "pattern": "(.)\\1{9,}",
+      "type": "regex",
+      "caseSensitive": false,
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "note": "同一个字符连续 10 次以上，通常是无意义刷屏"
+    },
+    {
+      "id": "b.spam.keyboard",
+      "name": "刷屏 · 无意义键盘脸滚",
+      "pattern": "^[asdfghjkl;qwertyuiopzxcvbnm]{12,}$",
+      "type": "regex",
+      "caseSensitive": false,
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "enabled": false,
+      "note": "默认关闭：整条内容只有英文键盘字符且长度 ≥12 时才命中"
+    },
+    {
+      "id": "b.spam.copy-paste",
+      "name": "刷屏 · 长文复制粘贴",
+      "pattern": "^.{180,}$",
+      "type": "regex",
+      "caseSensitive": false,
+      "targets": { "danmaku": true, "live": true },
+      "action": "hide",
+      "note": "评论区长文往往是正常影评，因此只在弹幕/直播弹幕里启用"
+    },
+    {
+      "id": "b.spoiler",
+      "name": "剧透 · 关键词",
+      "pattern": "剧透\n大结局是\n最后死了\n结局是\n凶手是\n彩蛋是",
+      "type": "keyword",
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "blur",
+      "enabled": false,
+      "note": "默认关闭：打开后命中内容改为模糊显示，鼠标移上去可临时查看"
+    },
+    {
+      "id": "b.topic.spoiler-tag",
+      "name": "屏蔽 · 带话题的推广",
+      "pattern": "#(?:好物推荐|带货|商品卡|橱窗)",
+      "type": "regex",
+      "caseSensitive": false,
+      "targets": { "comment": true, "danmaku": true, "live": true },
+      "action": "hide",
+      "enabled": false,
+      "note": "默认关闭：带货话题标签，需要时再打开"
+    }
+  ]
+}
