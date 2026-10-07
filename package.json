@@ -1,6 +1,6 @@
 {
   "name": "douyin-plus",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "抖音网页增强扩展：弹幕/评论关键词与正则屏蔽、规则导入导出与远程订阅更新。",
   "license": "MIT",

@@ -2,6 +2,25 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.1.1] - 2026-10-07
+
+### 修复
+
+- **默认规则订阅地址改为 jsDelivr**。原先用的 `raw.githubusercontent.com` 在国内网络
+  基本不可达（实测 curl 25 秒无响应），而 `cdn.jsdelivr.net` 正常。默认值必须用能打通的源。
+- 新增订阅源回退：默认地址拉取失败时自动重试 raw 源。用户自己填的地址不会被替换，
+  避免"我填了 A 却从 B 拉数据"。
+
+### 变更
+
+- 图标换成抖音品牌风格：青 (#25F4EE) / 粉 (#FE2C55) 对角分割底 + 白色双八分音符；
+  16px 用单音符保证小尺寸可读。
+- 新增 `.github/workflows/build.yml`：push / PR 跑测试、校验、打包并上传产物，
+  打 `v*` 标签时自动创建 Release 并附上 zip。
+- 新增 `tools/check-manifest.js`（版本号与权限一致性校验）、`tools/release.sh`（一键发版）、
+  `tools/test-remote-live.js`（联网验证订阅链路）。
+- `tools/pack.js` 打包失败时改为非 0 退出，避免 CI 静默通过。
+
 ## [0.1.0] - 2026-10-07
 
 首个版本：弹幕与评论屏蔽。
