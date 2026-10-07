@@ -63,14 +63,25 @@ text = at === -1 ? text + '\n' + entry : text.slice(0, at) + entry + text.slice(
 fs.writeFileSync('CHANGELOG.md', text);
 " "$VERSION" "$TODAY"
   echo "   已插入 CHANGELOG 条目，请补充变更内容后再继续（脚本已暂停）"
-  echo "   补完后手动执行：git add -A && git commit -m 'chore: release $VERSION' && git tag v$VERSION && git push origin main --tags"
+  echo "   补完后重新执行本脚本即可。"
   exit 0
 fi
 
-echo "==> 提交并打 tag"
+echo "==> 提交"
 git add -A
-git commit -m "chore: release $VERSION"
-git tag "v$VERSION"
+# 版本号与 CHANGELOG 可能在前面的步骤里已经提交过，这时没有新改动是正常的
+if git diff --cached --quiet; then
+  echo "   没有需要提交的改动（版本号与 CHANGELOG 已是目标状态）"
+else
+  git commit -m "chore: release $VERSION"
+fi
+
+echo "==> 打 tag"
+if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+  echo "   标签 v$VERSION 已存在，跳过"
+else
+  git tag "v$VERSION"
+fi
 
 echo "==> 推送"
 git push origin main
