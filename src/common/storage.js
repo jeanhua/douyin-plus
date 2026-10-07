@@ -17,9 +17,18 @@
     stats: 'stats'
   };
 
-  /** 远程规则订阅地址：默认指向本仓库 rules/index.json，可在设置页修改 */
+  /**
+   * 远程规则订阅地址：默认走 jsDelivr CDN。
+   * raw.githubusercontent.com 在部分网络环境（尤其国内）不可达，jsDelivr 有国内节点且会缓存仓库内容，
+   * 更适合作为默认值。用户也可以改成 raw 地址或任意自建地址。
+   */
   const DEFAULT_REMOTE_URL =
-    'https://raw.githubusercontent.com/jeanhua/douyin-plus/main/rules/index.json';
+    'https://cdn.jsdelivr.net/gh/jeanhua/douyin-plus@main/rules/index.json';
+
+  /** 默认地址的备用源：jsDelivr 拉取失败时按顺序重试 */
+  const FALLBACK_REMOTE_URLS = [
+    'https://raw.githubusercontent.com/jeanhua/douyin-plus/main/rules/index.json'
+  ];
 
   const DEFAULT_SETTINGS = {
     enabled: true,
@@ -288,6 +297,7 @@
     KEYS: KEYS,
     DEFAULT_SETTINGS: DEFAULT_SETTINGS,
     DEFAULT_REMOTE_URL: DEFAULT_REMOTE_URL,
+    FALLBACK_REMOTE_URLS: FALLBACK_REMOTE_URLS,
     todayKey: todayKey,
     getState: getState,
     getSettings: getSettings,

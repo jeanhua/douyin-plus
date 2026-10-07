@@ -43,11 +43,22 @@ Edge 同理：`edge://extensions/`。
 
 ## 规则订阅
 
-默认地址指向本仓库：
+默认地址走 jsDelivr CDN：
 
 ```
-https://raw.githubusercontent.com/jeanhua/douyin-plus/main/rules/index.json
+https://cdn.jsdelivr.net/gh/jeanhua/douyin-plus@main/rules/index.json
 ```
+
+> **为什么不用 raw.githubusercontent.com？**
+> 它在国内网络基本不可达（实测超时），而 jsDelivr 有国内节点。扩展内置了回退：
+> 默认地址拉取失败时会自动重试 raw 源，两条路都走不通才报错。
+> 你手动填的地址不会被替换成别的源，避免"我填了 A 却从 B 拉数据"。
+
+> **关于缓存**：jsDelivr 的边缘缓存是 12 小时、浏览器缓存 7 天。扩展拉取时强制
+> `no-store`，浏览器这一层不受影响；边缘缓存的 12 小时正好和默认的 12 小时检查
+> 间隔吻合。如果刚更新完规则想立刻生效，可以在浏览器里打开
+> `https://purge.jsdelivr.net/gh/jeanhua/douyin-plus@main/rules/index.json`
+> 手动清一次缓存，或者把订阅地址临时换成 raw 源。
 
 `rules/index.json` 是索引文件，格式如下，`files` 里 `enabled: false` 的文件会被跳过：
 
@@ -120,6 +131,7 @@ node tools/test-dom.js         # DOM 过滤层集成测试（内置最小 DOM �
 node tools/test-storage.js     # 存储层测试（内置/远程规则同步、统计）
 node tools/check-ui.js         # 检查 HTML 与 JS 的元素引用是否对得上
 node tools/check-manifest.js   # 版本号一致性、权限、CI 脚本引用校验
+npm run test:live              # 联网验证线上订阅地址整条链路（需网络）
 node tools/make-icons.js       # 重新生成图标
 node tools/pack.js             # 打包成 dist/douyin-plus-<version>.zip
 ```

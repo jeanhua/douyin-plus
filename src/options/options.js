@@ -109,6 +109,11 @@
     const manifest = chrome.runtime.getManifest();
     $('about-version').textContent =
       `douyin-plus v${manifest.version} · Manifest V${manifest.manifest_version} · 规则结构 schema v${schema.SCHEMA_VERSION}`;
+    // 默认订阅地址从代码里取，避免文档和实现写两份
+    const defaults = globalThis.DouyinPlus.storage || {};
+    if ($('default-remote-url')) {
+      $('default-remote-url').textContent = defaults.DEFAULT_REMOTE_URL || '(见 storage.js)';
+    }
   }
 
   // ------------------------------------------------------------ 规则表

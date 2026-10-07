@@ -443,8 +443,8 @@ test('无 chrome.permissions 时不阻塞流程', async () => {
   assert.strictEqual(allowed, true);
 });
 
-test('打包默认订阅地址指向本仓库', () => {
-  assert.ok(remote.normalizeUrl('https://raw.githubusercontent.com/jeanhua/douyin-plus/main/rules/index.json'));
+test('默认订阅地址走 jsDelivr（raw 在部分网络不可达）', () => {
+  assert.ok(remote.normalizeUrl('https://cdn.jsdelivr.net/gh/jeanhua/douyin-plus@main/rules/index.json'));
 });
 
 section('manifest / 文件完整性');

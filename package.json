@@ -26,6 +26,7 @@
     "icons": "node tools/make-icons.js",
     "zip": "node tools/pack.js",
     "check": "node tools/check-manifest.js && node tools/check-ui.js",
-    "release": "bash tools/release.sh"
+    "release": "bash tools/release.sh",
+    "test:live": "node tools/test-remote-live.js"
   }
 }

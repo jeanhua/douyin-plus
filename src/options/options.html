@@ -142,7 +142,8 @@
           <p class="muted">
             填写索引文件（含 <code>files</code> 列表）或单个规则集文件地址。远程规则会以 <code>source = remote</code>
             存入本地，更新时整体替换，不会动你自己写的规则。<br />
-            默认地址指向本仓库：<code>https://raw.githubusercontent.com/jeanhua/douyin-plus/main/rules/index.json</code>
+            默认地址走 jsDelivr CDN（国内可达），主源失败时会自动回退到 raw 源：
+            <code id="default-remote-url"></code>
           </p>
           <div class="row">
             <input id="remote-url" type="text" placeholder="订阅地址" />
@@ -282,6 +283,7 @@
 
     <script src="../common/matcher.js"></script>
     <script src="../common/schema.js"></script>
+    <script src="../common/storage.js"></script>
     <script src="../background/remote.js"></script>
     <script src="options.js"></script>
   </body>

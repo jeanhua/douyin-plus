@@ -220,49 +220,87 @@
     };
   }
 
-  /**
-   * 执行一次订阅更新并写入存储。
-   * @returns {{ ok: boolean, error?: string, warnings?: string[], stats?: object }}
-   */
-  async function updateFromRemote(url, options) {
-    const opts = options || {};
-    const storage = getStorage();
-    const settings = await storage.getSettings();
-    const target = normalizeUrl(url || settings.remote.url);
-    if (!target) {
-      const error = '未配置订阅地址';
-      await getStorage().setRemoteError(error);
-      return { ok: false, error: error };
-    }
+/**
+ * 尝试一次订阅更新（不做失败记录），成功返回结果，失败抛出错误。
+ */
+async function tryUpdate(target, opts) {
+  const subscribed = await fetchSubscription(target, { noCache: opts.noCache !== false });
+  const merged = mergeRuleSets(subscribed.ruleSets, opts.indexJson);
+  const result = await getStorage().applyRemoteRuleSet(merged, { url: target });
+  return {
+    ok: true,
+    url: target,
+    warnings: subscribed.warnings,
+    stats: result,
+    name: merged.name,
+    rules: merged.rules.length,
+    files: subscribed.ruleSets.length
+  };
+}
 
-    try {
-      const subscribed = await fetchSubscription(target, { noCache: opts.noCache !== false });
-      const merged = mergeRuleSets(subscribed.ruleSets, opts.indexJson);
-      const result = await getStorage().applyRemoteRuleSet(merged, { url: target });
-      return {
-        ok: true,
-        warnings: subscribed.warnings,
-        stats: result,
-        name: merged.name,
-        rules: merged.rules.length,
-        files: subscribed.ruleSets.length
-      };
-    } catch (err) {
-      const message = err && err.message ? err.message : String(err);
-      await getStorage().setRemoteError(message);
-      return { ok: false, error: message };
+/**
+ * 执行一次订阅更新并写入存储。
+ *
+ * 当订阅地址就是内置默认地址时，主源失败会依次重试备用源
+ * （默认主源是 jsDelivr，备用是 raw.githubusercontent.com）。
+ * 用户自己填的地址不会做这种替换，避免"我明明填了 A 却从 B 拉数据"。
+ *
+ * @returns {{ ok: boolean, error?: string, warnings?: string[] }}
+ */
+async function updateFromRemote(url, options) {
+  const opts = options || {};
+  const settings = await getStorage().getSettings();
+  const configured = String(url || settings.remote.url || '').trim();
+  const target = normalizeUrl(configured);
+  if (!target) {
+    const error = '未配置订阅地址';
+    await getStorage().setRemoteError(error);
+    return { ok: false, error: error };
+  }
+
+  const storageApi = getStorage();
+  const isDefaultUrl = normalizeUrl(storageApi.DEFAULT_REMOTE_URL) === target;
+  const candidates = [target];
+  if (isDefaultUrl) {
+    for (const fallback of storageApi.FALLBACK_REMOTE_URLS || []) {
+      const normalized = normalizeUrl(fallback);
+      if (normalized && !candidates.includes(normalized)) candidates.push(normalized);
     }
   }
 
-  root.remote = {
-    BUILTIN_HOSTS: BUILTIN_HOSTS,
-    normalizeUrl: normalizeUrl,
-    originPattern: originPattern,
-    ensureHostPermission: ensureHostPermission,
-    fetchText: fetchText,
-    fetchRuleSet: fetchRuleSet,
-    fetchSubscription: fetchSubscription,
-    mergeRuleSets: mergeRuleSets,
-    updateFromRemote: updateFromRemote
-  };
+  const failures = [];
+  for (const candidate of candidates) {
+    try {
+      const result = await tryUpdate(candidate, opts);
+      if (candidate !== target) {
+        console.info('[douyin-plus] 主订阅源不可用，已改用备用源：' + candidate);
+        result.usedFallback = true;
+        result.primaryUrl = target;
+      }
+      return result;
+    } catch (err) {
+      const message = err && err.message ? err.message : String(err);
+      failures.push(candidate === target ? message : candidate + '：' + message);
+    }
+  }
+
+  const finalError = failures[0] || '未知错误';
+  await storageApi.setRemoteError(finalError);
+  if (candidates.length > 1) {
+    console.warn('[douyin-plus] 订阅源全部失败：' + failures.join(' | '));
+  }
+  return { ok: false, error: finalError, failures: failures };
+}
+
+root.remote = {
+  BUILTIN_HOSTS: BUILTIN_HOSTS,
+  normalizeUrl: normalizeUrl,
+  originPattern: originPattern,
+  ensureHostPermission: ensureHostPermission,
+  fetchText: fetchText,
+  fetchRuleSet: fetchRuleSet,
+  fetchSubscription: fetchSubscription,
+  mergeRuleSets: mergeRuleSets,
+  updateFromRemote: updateFromRemote
+};
 })();
