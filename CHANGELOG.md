@@ -27,6 +27,7 @@
 - 右键菜单快捷添加：选中文字即可加入屏蔽规则。
 - popup 快捷面板与 options 管理页。
 - 自定义订阅地址的按需授权（`optional_host_permissions` + `chrome.permissions.request`）。
-- 图标：品牌红渐变圆角方块 + 白色对话气泡（气泡内挖空加号），由 `tools/make-icons.js` 无依赖生成。
+- 图标：抖音品牌青 (#25F4EE) / 粉 (#FE2C55) 对角分割底 + 白色双八分音符（16px 用单音符保证可读），
+  由 `tools/make-icons.js` 无依赖逐尺寸渲染生成。
 - 工具链：4 个自测脚本共 83 项断言（规则引擎 / DOM 过滤 / 存储层 / UI 一致性）、
   图标生成、zip 打包。

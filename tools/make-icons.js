@@ -1,9 +1,11 @@
 /**
  * 生成扩展图标（无第三方依赖，纯手写 PNG 编码）。
  *
- * 图案：品牌红渐变圆角方块 + 白色对话气泡，气泡内挖空一个加号。
- * 语义：气泡代表弹幕/评论，加号代表"增强"，同时呼应名字里的 plus。
- * 加号是挖空而非叠加，小尺寸下轮廓依然清晰。
+ * 图案：青 (#25F4EE) / 粉 (#FE2C55) 对角分割底 + 白色双八分音符（♫）。
+ *  - 对角分割复刻抖音的双色视觉语言，比叠加色边更干净、缩小时更稳
+ *  - 白色音符压在分割线上，两种底色都能形成足够对比
+ *  - 16/32 像素自动加粗笔画，保证任务栏小尺寸下仍能辨认
+ *  - 每个尺寸独立渲染（不做缩放），小尺寸用更高的超采样倍率
  *
  * 用法：node tools/make-icons.js
  */
@@ -13,14 +15,18 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-/** 渐变端点（左上 → 右下），取自抖音品牌红 */
-const GRAD_FROM = [255, 82, 112];
-const GRAD_TO = [150, 16, 70];
+// 抖音品牌色
+const CYAN = [37, 244, 238];
+const PINK = [254, 44, 85];
 const WHITE = [255, 255, 255];
+/** 音符描边色：接近抖音深色主题底色，用来把白音符从青底上"托"出来 */
+const RING = [22, 24, 35];
+const RING_ALPHA = 0.32;
+/** 描边宽度（像素），随尺寸略增以保证小尺寸可见 */
+const OUTLINE = 1.3;
 
 const SIZES = [16, 32, 48, 128];
 const OUT_DIR = path.join(__dirname, '..', 'icons');
-const SS = 6; // 超采样倍数
 
 // ---------------------------------------------------------------- PNG 编码
 
@@ -74,56 +80,123 @@ function inRoundRect(x, y, x0, y0, x1, y1, r) {
   if (x < x0 || x > x1 || y < y0 || y > y1) return false;
   const cx = Math.min(Math.max(x, x0 + r), x1 - r);
   const cy = Math.min(Math.max(y, y0 + r), y1 - r);
+  return (x - cx) ** 2 + (y - cy) ** 2 <= r * r;
+}
+
+function distToSegment(x, y, ax, ay, bx, by) {
+  const dx = bx - ax;
+  const dy = by - ay;
+  const lenSq = dx * dx + dy * dy;
+  let t = lenSq ? ((x - ax) * dx + (y - ay) * dy) / lenSq : 0;
+  t = Math.min(1, Math.max(0, t));
+  return Math.hypot(x - (ax + t * dx), y - (ay + t * dy));
+}
+
+function inEllipse(x, y, cx, cy, rx, ry, rot) {
+  const cos = Math.cos(-rot);
+  const sin = Math.sin(-rot);
   const dx = x - cx;
   const dy = y - cy;
-  return dx * dx + dy * dy <= r * r;
+  const ex = dx * cos - dy * sin;
+  const ey = dx * sin + dy * cos;
+  return (ex / rx) ** 2 + (ey / ry) ** 2 <= 1;
 }
 
-function inTriangle(x, y, ax, ay, bx, by, cx, cy) {
-  const v0x = cx - ax;
-  const v0y = cy - ay;
-  const v1x = bx - ax;
-  const v1y = by - ay;
-  const v2x = x - ax;
-  const v2y = y - ay;
-  const den = v0x * v1y - v1x * v0y;
-  if (!den) return false;
-  const u = (v2x * v1y - v1x * v2y) / den;
-  const v = (v0x * v2y - v2x * v0y) / den;
-  return u >= 0 && v >= 0 && u + v <= 1;
+/**
+ * 双八分音符：左符头低、右符头高，两条符干由顶部斜梁相连。
+ * 笔画参数化，小尺寸下加粗、收紧，避免两个符头糊在一起。
+ */
+function makeNote(bold, spread) {
+  const b = bold || 1;
+  const sp = spread === undefined ? 1 : spread;
+  const headR = 0.098 * b;
+  const headRx = headR * 1.18;
+  const headRy = headR;
+  const stemW = 0.025 * b;
+  const beamW = 0.044 * b;
+  const tilt = -0.32;
+
+  const h1 = { x: 0.5 - 0.185 * sp, y: 0.705 };
+  const h2 = { x: 0.5 + 0.175 * sp, y: 0.605 };
+  const stem1X = h1.x + headRx * 0.66;
+  const stem2X = h2.x + headRx * 0.66;
+  const stem1Top = 0.285;
+  const stem2Top = 0.185;
+
+  return function inNote(x, y) {
+    if (inEllipse(x, y, h1.x, h1.y, headRx, headRy, tilt)) return true;
+    if (inEllipse(x, y, h2.x, h2.y, headRx, headRy, tilt)) return true;
+    if (distToSegment(x, y, stem1X, h1.y - headR * 0.4, stem1X, stem1Top) <= stemW) return true;
+    if (distToSegment(x, y, stem2X, h2.y - headR * 0.4, stem2X, stem2Top) <= stemW) return true;
+    if (distToSegment(x, y, stem1X, stem1Top + beamW * 0.5, stem2X, stem2Top + beamW * 0.5) <= beamW) return true;
+    return false;
+  };
 }
 
-/** 气泡主体 + 左下角尾巴 */
-function inBubble(x, y) {
-  if (inRoundRect(x, y, 0.14, 0.18, 0.86, 0.66, 0.15)) return true;
-  return inTriangle(x, y, 0.26, 0.58, 0.23, 0.86, 0.51, 0.60);
-}
+/**
+ * 单八分音符：符头 + 符干 + 右上小旗。
+ * 16px 下双音符的六个细节会糊成一团，改用单音符保持可读。
+ */
+function makeSingleNote(bold) {
+  const b = bold || 1;
+  const headRx = 0.165 * b;
+  const headRy = 0.132 * b;
+  const head = { x: 0.395, y: 0.735 };
+  const stemX = head.x + headRx * 0.72;
+  const stemTop = 0.205;
+  const stemW = 0.038 * b;
 
-/** 加号（会被从气泡里挖掉），中心与气泡视觉重心对齐 */
-function inPlus(x, y) {
-  const cx = 0.5;
-  const cy = 0.42;
-  const arm = 0.155;
-  const half = 0.046;
-  const horizontal = Math.abs(x - cx) <= arm && Math.abs(y - cy) <= half;
-  const vertical = Math.abs(x - cx) <= half && Math.abs(y - cy) <= arm;
-  return horizontal || vertical;
-}
-
-function lerp(a, b, t) {
-  return a + (b - a) * t;
+  return function inNote(x, y) {
+    if (inEllipse(x, y, head.x, head.y, headRx * 1.12, headRy, -0.30)) return true;
+    if (distToSegment(x, y, stemX, head.y - 0.03, stemX, stemTop) <= stemW) return true;
+    // 小旗：顶端向右下的两段折线
+    if (distToSegment(x, y, stemX, stemTop + 0.02, stemX + 0.20, stemTop + 0.115) <= stemW * 1.15) return true;
+    if (distToSegment(x, y, stemX + 0.20, stemTop + 0.115, stemX + 0.155, stemTop + 0.245) <= stemW * 1.05) return true;
+    return false;
+  };
 }
 
 // ---------------------------------------------------------------- 渲染
 
-function render(size) {
+/** 笔画随尺寸调整：小尺寸加粗，16px 直接用单音符 */
+function noteFor(size) {
+  if (size <= 16) return makeSingleNote(1.18);
+  if (size <= 32) return makeNote(1.24, 0.94);
+  if (size <= 48) return makeNote(1.08, 0.98);
+  return makeNote(1, 1);
+}
+
+function render(size, inNote) {
+  const cornerRadius = 0.225;
   const out = Buffer.alloc(size * size * 4);
+
+  // 越小越需要超采样，否则边缘锯齿会吃掉笔画
+  const SS = size <= 20 ? 8 : size <= 48 ? 6 : 5;
   const step = 1 / (SS * size);
+
+  // 白色音符在青底上对比度不足，尤其小尺寸；
+  // 用"音符向外扩张一圈"的方式给白色区域加一圈底色描边。
+  const outlineInNote = (x, y) => {
+    const d = OUTLINE / size;
+    return (
+      inNote(x, y) ||
+      inNote(x + d, y) ||
+      inNote(x - d, y) ||
+      inNote(x, y + d) ||
+      inNote(x, y - d) ||
+      inNote(x + d * 0.7, y + d * 0.7) ||
+      inNote(x - d * 0.7, y - d * 0.7) ||
+      inNote(x + d * 0.7, y - d * 0.7) ||
+      inNote(x - d * 0.7, y + d * 0.7)
+    );
+  };
 
   for (let py = 0; py < size; py++) {
     for (let px = 0; px < size; px++) {
-      let covered = 0;
-      let white = 0;
+      let bgHits = 0;
+      let cyanHits = 0;
+      let whiteHits = 0;
+      let ringHits = 0;
       let total = 0;
 
       for (let sy = 0; sy < SS; sy++) {
@@ -131,22 +204,50 @@ function render(size) {
           const x = (px * SS + sx + 0.5) * step;
           const y = (py * SS + sy + 0.5) * step;
           total++;
-          if (!inRoundRect(x, y, 0, 0, 1, 1, 0.235)) continue;
-          covered++;
-          if (inBubble(x, y) && !inPlus(x, y)) white++;
+
+          if (!inRoundRect(x, y, 0, 0, 1, 1, cornerRadius)) continue;
+          bgHits++;
+          // 沿主对角线分割：左上青、右下粉
+          if (x + y < 1) cyanHits++;
+          if (inNote(x, y)) whiteHits++;
+          else if (outlineInNote(x, y)) ringHits++;
         }
       }
 
-      const alpha = covered / total;
-      const ratio = covered ? white / covered : 0;
-      const t = Math.min(1, Math.max(0, (px / size + py / size) / 2));
       const idx = (py * size + px) * 4;
 
-      for (let c = 0; c < 3; c++) {
-        const base = lerp(GRAD_FROM[c], GRAD_TO[c], t);
-        out[idx + c] = Math.round(lerp(base, WHITE[c], ratio));
+      if (!bgHits) {
+        out[idx] = PINK[0];
+        out[idx + 1] = PINK[1];
+        out[idx + 2] = PINK[2];
+        out[idx + 3] = 0;
+        continue;
       }
-      out[idx + 3] = Math.round(alpha * 255);
+
+      // 底色在分割线附近做一次均值混合，得到抗锯齿的对角边缘
+      const inv = 1 / bgHits;
+      const cyanRatio = cyanHits * inv;
+      const whiteRatio = whiteHits * inv;
+      const ringRatio = ringHits * inv;
+
+      let r = CYAN[0] * cyanRatio + PINK[0] * (1 - cyanRatio);
+      let g = CYAN[1] * cyanRatio + PINK[1] * (1 - cyanRatio);
+      let b = CYAN[2] * cyanRatio + PINK[2] * (1 - cyanRatio);
+
+      // 先压一层深色描边，再叠白色音符
+      if (ringRatio) {
+        r = r * (1 - ringRatio * RING_ALPHA) + RING[0] * (ringRatio * RING_ALPHA);
+        g = g * (1 - ringRatio * RING_ALPHA) + RING[1] * (ringRatio * RING_ALPHA);
+        b = b * (1 - ringRatio * RING_ALPHA) + RING[2] * (ringRatio * RING_ALPHA);
+      }
+      r = r * (1 - whiteRatio) + WHITE[0] * whiteRatio;
+      g = g * (1 - whiteRatio) + WHITE[1] * whiteRatio;
+      b = b * (1 - whiteRatio) + WHITE[2] * whiteRatio;
+
+      out[idx] = Math.round(r);
+      out[idx + 1] = Math.round(g);
+      out[idx + 2] = Math.round(b);
+      out[idx + 3] = Math.round((bgHits / total) * 255);
     }
   }
   return out;
@@ -154,7 +255,7 @@ function render(size) {
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
 for (const size of SIZES) {
-  const png = encodePng(size, render(size));
+  const png = encodePng(size, render(size, noteFor(size)));
   const file = path.join(OUT_DIR, `icon${size}.png`);
   fs.writeFileSync(file, png);
   console.log(`wrote ${path.relative(process.cwd(), file)} (${png.length} bytes)`);
