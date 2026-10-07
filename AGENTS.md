@@ -25,6 +25,7 @@
 ## 模块约定（容易踩坑）
 
 - common 模块都是 IIFE + `'use strict'`，用 `(globalThis.DouyinPlus = globalThis.DouyinPlus || {})` 挂载并自带重复加载保护；**禁止 import/export**。`matcher.js` 同时注入 MAIN world，不能碰任何 `chrome.*` API；`remote.js` 也被设置页直接引入，对 chrome 的访问必须在函数内惰性进行。
+- **Chrome 对同一路径的内容脚本只注入一次（跨 world 去重）**：同一文件同时登记在 MAIN 与 ISOLATED 两个 `content_scripts` 里时，ISOLATED world 拿不到它（曾因此让 matcher 缺失、dom-filter 静默退出，DOM 兜底过滤整个失效）。需要两边都用的文件各自留一份：`matcher.js`（MAIN + 各页面）与 `matcher.isolated.js`（ISOLATED），内容必须逐字节一致；`tools/test.js` 与 `tools/check-manifest.js` 都会校验。
 - 脚本加载顺序固定且显式声明：content_scripts 在 `manifest.json`，后台在 `service-worker.js` 的 `importScripts`。新增脚本文件必须在这两处登记（popup / options 页还要在对应 HTML 里加 `<script>`）。
 - MAIN ↔ ISOLATED 通过 `window.postMessage` 通信，标记 `source: 'douyin-plus'`（规则下发）与 `'douyin-plus-main'`（命中上报）；扩展内部消息统一 `dyp:` 前缀，在 `service-worker.js` 的 `handlers` 表注册，响应形如 `{ok, data|error}`。
 - 网络层过滤只删数组里“文本字段命中”的项，绝不删对象属性；`matcher.js` 的 `TEXT_FIELDS` 取值顺序敏感，取不到文本的对象（如用户信息）不删。关键词按换行 / 逗号拆词并按字面量转义，正则整条编译；单条 pattern 上限 500 字符，非法正则安全跳过。

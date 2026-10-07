@@ -111,6 +111,24 @@ for (const entry of scripts) {
 if (!worlds.has('MAIN')) fail('缺少 MAIN world 的 content script，网络拦截将无法工作');
 if (!worlds.has('ISOLATED')) fail('缺少 ISOLATED world 的 content script，规则下发将无法工作');
 
+// Chrome 对同一路径的内容脚本只注入一次（跨 world 去重）。共用路径会让后一个 world
+// 静默缺少该脚本：例如 ISOLATED 缺 matcher 时 dom-filter 直接退出，DOM 兜底过滤全失效。
+// 需要两边都用的文件请各自维护一份（如 matcher.js / matcher.isolated.js）。
+const byFile = new Map();
+for (const entry of scripts) {
+  const world = entry.world || 'ISOLATED';
+  for (const file of [].concat(entry.js || [], entry.css || [])) {
+    const owners = byFile.get(file) || new Set();
+    owners.add(world);
+    byFile.set(file, owners);
+  }
+}
+for (const [file, owners] of byFile) {
+  if (owners.size > 1) {
+    fail(`${file} 被多个 world 共用（${Array.from(owners).join(' + ')}），Chrome 只会注入一次，请为每个 world 各留一份`);
+  }
+}
+
 // ---------------------------------------------------------------- 打包清单覆盖
 
 const packSource = fs.readFileSync(path.join(ROOT, 'tools/pack.js'), 'utf8');

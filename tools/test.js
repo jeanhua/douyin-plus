@@ -223,6 +223,57 @@ test('不吃掉没有文本字段的对象（如用户信息）', () => {
   assert.strictEqual(result, null, '昵称命中不应删除整个用户对象');
 });
 
+test('blur 规则命中项保留在响应里（交给 DOM 层模糊）', () => {
+  const json = JSON.stringify({ data: { comments: [{ cid: 'c1', content: '剧透：凶手是管家' }, { cid: 'c2', content: '好看' }] } });
+  const m = matcher.createMatcher([{ id: 'rb', pattern: '凶手是', type: 'keyword', action: 'blur' }], 'comment');
+  const result = matcher.filterJsonText(json, m);
+  assert.strictEqual(result, null, '只有 blur 命中时不应改写响应，否则内容根本不会渲染');
+});
+
+test('hide 与 blur 混用时只删 hide 命中项', () => {
+  const json = JSON.stringify({
+    data: {
+      comments: [
+        { cid: 'c1', content: '剧透：凶手是管家' },
+        { cid: 'c2', content: '加微信领资料' },
+        { cid: 'c3', content: '好看' }
+      ]
+    }
+  });
+  const m = matcher.createMatcher(
+    [
+      { id: 'r-hide', pattern: '加微信', type: 'keyword', action: 'hide' },
+      { id: 'r-blur', pattern: '凶手是', type: 'keyword', action: 'blur' }
+    ],
+    'comment'
+  );
+  const result = matcher.filterJsonText(json, m);
+  assert.ok(result, '应产生改动');
+  assert.strictEqual(result.removed, 1);
+  const contents = JSON.parse(result.text).data.comments.map((c) => c.content);
+  assert.deepStrictEqual(contents, ['剧透：凶手是管家', '好看']);
+  assert.ok(!result.rules['r-blur'], 'blur 命中不该计入网络层拦截统计');
+});
+
+test('blur 命中项内嵌的子数组仍继续过滤', () => {
+  const json = JSON.stringify({
+    comments: [{ content: '凶手是管家', replies: [{ text: '加微信' }, { text: '好的' }] }]
+  });
+  const m = matcher.createMatcher(
+    [
+      { id: 'r-blur', pattern: '凶手是', type: 'keyword', action: 'blur' },
+      { id: 'r-hide', pattern: '加微信', type: 'keyword', action: 'hide' }
+    ],
+    'comment'
+  );
+  const result = matcher.filterJsonText(json, m);
+  assert.ok(result);
+  const parsed = JSON.parse(result.text);
+  assert.strictEqual(parsed.comments.length, 1, 'blur 命中项应保留');
+  assert.strictEqual(parsed.comments[0].replies.length, 1, '子数组里的 hide 命中仍应删除');
+  assert.strictEqual(parsed.comments[0].replies[0].text, '好的');
+});
+
 // ------------------------------------------------------------------ schema
 
 section('schema: 规则标准化');
@@ -476,6 +527,39 @@ test('MAIN world 内容脚本不使用 ES module 语法', () => {
     const code = fs.readFileSync(path.join(ROOT, file), 'utf8');
     assert.ok(!/^\s*(import|export)\s/m.test(code), file + ' 含 import/export，会导致注入失败');
   }
+});
+
+test('不同 world 的 content script 不共用同一路径', () => {
+  // Chrome 对同一路径只注入一次（跨 world 去重）：共用会让后一个 world 拿不到脚本，
+  // 例如 ISOLATED 缺 matcher 时 dom-filter 静默退出，DOM 兜底过滤整个失效。
+  const byFile = new Map();
+  for (const cs of manifest.content_scripts) {
+    const world = cs.world || 'ISOLATED';
+    for (const file of cs.js || []) {
+      const worlds = byFile.get(file) || new Set();
+      worlds.add(world);
+      byFile.set(file, worlds);
+    }
+    for (const file of cs.css || []) {
+      const worlds = byFile.get(file) || new Set();
+      worlds.add(world);
+      byFile.set(file, worlds);
+    }
+  }
+  const shared = Array.from(byFile.entries())
+    .filter(([, worlds]) => worlds.size > 1)
+    .map(([file, worlds]) => file + '（' + Array.from(worlds).join(' + ') + '）');
+  assert.deepStrictEqual(shared, [], '这些文件被多个 world 共用，Chrome 只会注入一次：' + shared.join('、'));
+});
+
+test('两份 matcher 内容完全一致', () => {
+  const main = fs.readFileSync(path.join(ROOT, 'src/common/matcher.js'), 'utf8');
+  const isolated = fs.readFileSync(path.join(ROOT, 'src/common/matcher.isolated.js'), 'utf8');
+  assert.strictEqual(
+    isolated,
+    main,
+    'matcher.js 与 matcher.isolated.js 必须逐字节一致，改动后请同步复制'
+  );
 });
 
 test('service worker 引用的脚本都存在', () => {

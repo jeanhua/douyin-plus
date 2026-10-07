@@ -70,7 +70,7 @@
         "src/content/content.css"
       ],
       "js": [
-        "src/common/matcher.js",
+        "src/common/matcher.isolated.js",
         "src/common/schema.js",
         "src/common/storage.js",
         "src/content/dom-filter.js",

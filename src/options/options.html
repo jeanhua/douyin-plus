@@ -193,7 +193,8 @@
             <li>
               扩展在页面 <b>MAIN world</b> 注入网络拦截器，劫持 <code>fetch</code> 与
               <code>XMLHttpRequest</code>，直接过滤抖音弹幕（<code>/aweme/v1/web/danmaku/*</code>）与评论
-              （<code>/aweme/v1/web/comment/*</code>）接口返回的 JSON。被屏蔽的内容在渲染前就消失，不会占位、不会闪烁。
+              （<code>/aweme/v1/web/comment/*</code>）接口返回的 JSON。选择「隐藏」的规则命中后，
+              内容在渲染前就消失，不会占位、不会闪烁；「模糊」的规则则保留内容，由页面内的过滤器加模糊效果。
             </li>
             <li>
               <b>ISOLATED world</b> 的 DOM 过滤器做兜底，处理 WebSocket 直播弹幕、缓存数据等绕过接口的场景。

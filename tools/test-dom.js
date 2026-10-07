@@ -56,8 +56,14 @@ function matchesSimple(el, simple) {
     if (!el.classList.contains(name)) return false;
   }
   if (simple.attr) {
-    const raw = simple.attr.startsWith('data-') ? el.dataset[simple.attr.slice(5).replace(/-([a-z])/g, (_, c) => c.toUpperCase())] : el.attributes[simple.attr];
-    if (raw === undefined || raw === null) return false;
+    // class 走 className（真实 DOM 里 [class*=...] 只看 class 属性，不看 classList 之外的来源）
+    const raw =
+      simple.attr === 'class'
+        ? el.className
+        : simple.attr.startsWith('data-')
+        ? el.dataset[simple.attr.slice(5).replace(/-([a-z])/g, (_, c) => c.toUpperCase())]
+        : el.attributes[simple.attr];
+    if (raw === undefined || raw === null || raw === '') return false;
     const value = String(raw);
     if (simple.op === '*' && value.indexOf(simple.value) === -1) return false;
     if (simple.op === '^' && value.indexOf(simple.value) !== 0) return false;
@@ -366,6 +372,58 @@ async function run() {
     });
   }
 
+  section('dom-filter: 视频弹幕');
+
+  {
+    // 还原抖音真实结构：叠加层 > 单条弹幕（data-danmu-id）> div.danMuText > 文本
+    const blurRule = rule({ id: 'rd', action: 'blur', targets: { danmaku: true } });
+    const stored = {
+      rules: [blurRule],
+      settings: { enabled: true, targets: { danmaku: true, comment: true, live: true }, domFilter: true }
+    };
+    const env = createEnv(stored);
+    const dom = env.sandbox.DouyinPlus.dom;
+
+    const overlay = env.document.createElement('div');
+    overlay.className = 'x6QYrwaa ntlxAYR5 danmu';
+    env.document.body.appendChild(overlay);
+
+    const makeDanmaku = (id, textValue) => {
+      const item = env.document.createElement('div');
+      item.className = 'hOhWz449 FJn8osCU';
+      item.setAttribute('data-danmu-id', id);
+      const text = env.document.createElement('div');
+      text.className = 'pCpu7utj danMuText';
+      text.textContent = textValue;
+      item.appendChild(text);
+      overlay.appendChild(item);
+      return { item, text };
+    };
+
+    const hit = makeDanmaku('7663726254868906792', '快来加微信领取资料');
+    const miss = makeDanmaku('7663726254868906793', '这个视频真不错');
+    dom.onRulesChanged(stored.rules, stored.settings);
+    env.flushIdle();
+
+    test('命中弹幕整条被模糊（含哈希类名的真实结构）', () => {
+      assert.ok(hit.item.classList.contains('dyp-blur'), '弹幕条目应加 dyp-blur');
+      assert.ok(!hit.text.classList.contains('dyp-blur'), '不应重复模糊内部文本节点');
+      assert.strictEqual(hit.item.getAttribute('data-dyp-rule'), 'rd');
+    });
+    test('未命中弹幕不受影响', () => {
+      assert.ok(!miss.item.classList.contains('dyp-blur'));
+      assert.ok(!miss.item.classList.contains('dyp-hidden'));
+    });
+
+    // 新插入的弹幕（MutationObserver 路径）也应被处理
+    const later = makeDanmaku('7663726254868906794', '加微信看后续');
+    dom.scan(overlay);
+    env.flushIdle();
+    test('动态插入的弹幕同样被模糊', () => {
+      assert.ok(later.item.classList.contains('dyp-blur'));
+    });
+  }
+
   section('dom-filter: 开关');
 
   {
@@ -392,8 +450,10 @@ async function run() {
   section('dom-filter: 场景过滤');
 
   {
+    // 存储里的规则都经过 schema.normalizeTargets 归一化：未勾选的场景显式写成 false。
+    // 这里必须用归一化后的形状，否则 matcher 的宽松语义（缺失键视为启用）会让弹幕也命中。
     const stored = {
-      rules: [rule({ targets: { comment: true } })],
+      rules: [rule({ targets: { danmaku: false, comment: true, live: false } })],
       settings: { enabled: true, targets: { danmaku: true, comment: true, live: true }, domFilter: true }
     };
     const env = createEnv(stored);

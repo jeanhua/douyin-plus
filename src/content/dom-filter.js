@@ -13,11 +13,20 @@
 
   const root = (globalThis.DouyinPlus = globalThis.DouyinPlus || {});
   const matcher = root.matcher;
-  if (!matcher || root.dom) return;
+  if (root.dom) return;
+  if (!matcher) {
+    // 加载顺序被破坏时显式报错：曾经因为文件被两个 world 共用而被 Chrome 去重，静默退出后极难排查
+    console.warn('[douyin-plus] DOM 过滤器未启动：matcher 未先加载');
+    return;
+  }
 
   /**
    * 内容容器选择器。抖音前端类名是 CSS Modules 生成的，会变，
-   * 因此以 data-e2e 属性为主、类名片段为辅，并且只用 closest 从新增节点向上找。
+   * 因此以 data-* 属性为主、类名片段为辅，并且只用 closest 从新增节点向上找。
+   *
+   * 视频弹幕的真实结构（2026-10 实测）：播放器 > 叠加层 div.danmu >
+   * 单条弹幕 div[data-danmu-id] > div.<hash>.danMuText > span，其中只有
+   * data-danmu-id 与语义类名 danMuText 稳定，哈希类名（如 hOhWz449）不可依赖。
    */
   const CONTAINERS = [
     // 视频/图集评论区
@@ -27,6 +36,10 @@
     { target: 'comment', sel: 'div[class*="commentItem"]' },
     { target: 'comment', sel: 'div[class*="CommentItem"]' },
     { target: 'comment', sel: 'li[class*="comment-"]' },
+    // 视频弹幕：单条弹幕根节点带 data-danmu-id（文字在 .danMuText 内）；
+    // 类名是 CSS Modules 哈希，只有语义类名 danMuText 稳定，单独作为兜底。
+    { target: 'danmaku', sel: '[data-danmu-id]' },
+    { target: 'danmaku', sel: '[class*="danMuText"]' },
     // 直播弹幕
     { target: 'danmaku', sel: '[data-e2e="danmaku-item"]' },
     { target: 'danmaku', sel: 'div[class*="danmaku"]' },
