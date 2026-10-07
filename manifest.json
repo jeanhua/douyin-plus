@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "douyin-plus",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "抖音网页增强：弹幕/评论关键词与正则屏蔽、规则自定义与导入导出、远程规则订阅更新。",
   "author": "jeanhua",
   "homepage_url": "https://github.com/jeanhua/douyin-plus",
