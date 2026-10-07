@@ -26,7 +26,7 @@
 ## 安装（开发者模式）
 
 1. 打开 `chrome://extensions/`，右上角开启"开发者模式"。
-2. 点击"加载已解压的扩展程序"，选择本仓库根目录。
+2. 点击"加载已解压的扩展程序"，选择本仓库根目录（或解压后的 Release zip）。
 3. 打开 `https://www.douyin.com/`，扩展会自动注入。
 
 Edge 同理：`edge://extensions/`。
@@ -114,11 +114,12 @@ tools/pack.js              打包 zip
 ## 开发
 
 ```bash
-npm test                       # 跑全部自测（83 项）
+npm test                       # 跑全部自测（83 项断言 + UI/ manifest 校验）
 node tools/test.js             # 规则引擎、规则文件、manifest 完整性
 node tools/test-dom.js         # DOM 过滤层集成测试（内置最小 DOM 实现）
 node tools/test-storage.js     # 存储层测试（内置/远程规则同步、统计）
 node tools/check-ui.js         # 检查 HTML 与 JS 的元素引用是否对得上
+node tools/check-manifest.js   # 版本号一致性、权限、CI 脚本引用校验
 node tools/make-icons.js       # 重新生成图标
 node tools/pack.js             # 打包成 dist/douyin-plus-<version>.zip
 ```
@@ -128,7 +129,19 @@ node tools/pack.js             # 打包成 dist/douyin-plus-<version>.zip
 测试覆盖的要点：关键词/正则匹配与边界、非法正则的安全降级、`targets` 各写法、
 JSON 深度过滤（不误删非文本对象）、规则去重与合并、导出再导入的往返一致性、
 内置与远程规则文件的可编译性、DOM 命中与恢复、统计不重复计数、用户停用/删除状态在
-规则更新后是否保留、UI 元素引用一致性。
+规则更新后是否保留、UI 元素引用一致性、版本号跨文件一致。
+
+## 持续集成与发版
+
+[`.github/workflows/build.yml`](.github/workflows/build.yml) 会在 push / PR 时跑测试、校验
+manifest、打包并上传产物；打 `v*` 标签时会额外创建 Release 并把 zip 作为附件。
+
+```bash
+bash tools/release.sh 0.2.0    # 同步版本号 → 校验 → 提交 → 打 tag → 推送
+```
+
+脚本会在需要手写 CHANGELOG 时暂停，补完变更说明后按提示执行后续命令即可。
+也可以手动：改 `manifest.json` 与 `package.json` 的版本号 → 提交 → `git tag v0.2.0` → 推送 tag。
 
 ## 已知限制
 

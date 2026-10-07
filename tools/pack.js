@@ -56,14 +56,20 @@ function zip(stageDir, outFile) {
         { stdio: 'inherit' }
       );
     } else {
-      execFileSync('zip', ['-r', '-q', outFile, '.'], { cwd: stageDir, stdio: 'inherit' });
+      // -X 不记录多余的文件属性，让 zip 内容更稳定
+      execFileSync('zip', ['-r', '-q', '-X', outFile, '.'], { cwd: stageDir, stdio: 'inherit' });
     }
-    return true;
   } catch (err) {
-    console.warn('自动打包失败：' + (err && err.message ? err.message : err));
-    console.warn('可手动压缩目录：' + stageDir);
+    console.error('打包失败：' + (err && err.message ? err.message : err));
+    if (!isWin) console.error('请确认系统已安装 zip 命令（Debian/Ubuntu：apt-get install zip）。');
     return false;
   }
+
+  if (!fs.existsSync(outFile) || fs.statSync(outFile).size === 0) {
+    console.error('打包命令执行完毕但没有产出有效文件：' + outFile);
+    return false;
+  }
+  return true;
 }
 
 rmrf(DIST);
@@ -83,4 +89,5 @@ for (const file of listFiles(STAGE, '', [])) {
 }
 
 console.log(`已准备 ${NAME}，共 ${listFiles(STAGE, '', []).length} 个文件`);
-if (zip(STAGE, OUT)) console.log('打包完成：' + path.relative(ROOT, OUT));
+if (!zip(STAGE, OUT)) process.exit(1);
+console.log('打包完成：' + path.relative(ROOT, OUT));
