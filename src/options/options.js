@@ -109,6 +109,11 @@
     const manifest = chrome.runtime.getManifest();
     $('about-version').textContent =
       `douyin-plus v${manifest.version} · Manifest V${manifest.manifest_version} · 规则结构 schema v${schema.SCHEMA_VERSION}`;
+    // 仓库地址以 manifest 的 homepage_url 为准，避免和扩展元数据写两份
+    const repo = manifest.homepage_url || 'https://github.com/jeanhua/douyin-plus';
+    const repoLink = $('about-repo');
+    repoLink.href = repo;
+    repoLink.textContent = repo.replace(/^https?:\/\//, '').replace(/\.git$/, '');
     // 默认订阅地址从代码里取，避免文档和实现写两份
     const defaults = globalThis.DouyinPlus.storage || {};
     if ($('default-remote-url')) {
